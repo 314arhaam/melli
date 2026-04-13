@@ -93,6 +93,7 @@ func main() {
 	out.Elapsed = time.Since(startTime).Milliseconds()
 	out.DateTime = startTime.Format(time.DateTime)
 	out.TimeStamp = startTime.UnixMilli()
+	out.Timeout = (*cli.timeOut) * 1000
 	//fmt.Println(out)
 	if !cli.stdout {
 		jsonByte, err := json.Marshal(out)
@@ -102,7 +103,14 @@ func main() {
 			fmt.Println(string(jsonByte))
 		}
 	} else {
-		err := iotools.StructToJsonFile(*cli.outputFile, out)
+		var filename string
+		if *cli.outputFile != "-" {
+			filename = *cli.outputFile
+		} else {
+			// ds, _ := strconv.FormatInt()
+			filename = "data/results-" + startTime.Format(time.DateOnly) + "_" + startTime.Format(time.TimeOnly) + ".json"
+		}
+		err := iotools.StructToJsonFile(filename, out)
 		if err != nil {
 			fmt.Println(err)
 		}
