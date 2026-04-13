@@ -22,12 +22,12 @@ type CLIArgs struct {
 func (cli *CLIArgs) Init() {
 	cli.timeOut = flag.Int64("t", 60, "Timeout in seconds, default 60")
 	cli.inputFile = flag.String("f", "", "**REQUIRED** Input filename")
-	cli.outputFile = flag.String("o", "", "Output filename. For auto output pass -. Default: no output file, only show in stdout.")
+	cli.outputFile = flag.String("o", "", "Output filename. Default: auto generated name with datetime, Pass - for json stdout only.")
 	flag.Parse()
 	if *cli.inputFile == "" {
 		panic("No input file added")
 	}
-	if *cli.outputFile == "" {
+	if *cli.outputFile == "-" {
 		cli.stdout = false
 	} else {
 		cli.stdout = true
@@ -49,6 +49,7 @@ func main() {
 	// Data from channels aggregated
 	out := iotools.WebsiteList{}
 	//
+	out.Start()
 	startTime := time.Now()
 	for _, wb := range data.Website {
 		wg.Add(1)
@@ -60,11 +61,12 @@ func main() {
 	for i := range d {
 		out.Website = append(out.Website, i)
 	}
-	out.Elapsed = time.Since(startTime).Milliseconds()
+	/*out.Elapsed = time.Since(startTime).Milliseconds()
 	out.DateTime = startTime.Format(time.DateTime)
-	out.TimeStamp = startTime.UnixMilli()
+	out.TimeStamp = startTime.UnixMilli()*/
 	out.Timeout = (*cli.timeOut) * 1000
 	//fmt.Println(out)
+	out.Tick()
 	if !cli.stdout {
 		jsonByte, err := json.Marshal(out)
 		if err != nil {
@@ -74,7 +76,7 @@ func main() {
 		}
 	} else {
 		var filename string
-		if *cli.outputFile != "-" {
+		if *cli.outputFile != "" {
 			filename = *cli.outputFile
 		} else {
 			// ds, _ := strconv.FormatInt()
