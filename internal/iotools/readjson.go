@@ -19,15 +19,27 @@ type WebsiteList struct {
 	Elapsed	int			`json:"elapsed_time"`
 }
 
-func JsonFileToStr(fname string) (WebsiteList, error) {
+func JsonFileToStruct(fname string) (WebsiteList, error) {
 	website := WebsiteList{Website: make([]Website, 10, 512)}
 	file, err := os.Open(fname)
 	if err != nil {
-		return website, fmt.Errorf("Error in JsonFileToStr / Open data file: ", err)
+		return website, fmt.Errorf("Error in JsonFileToStruct / Open data file: ", err)
 	}
 	defer file.Close()
 	if err := json.NewDecoder(file).Decode(&website); err != nil {
-		return website, fmt.Errorf("Error in JsonFileToStr / Decoding: ", err)
+		return website, fmt.Errorf("Error in JsonFileToStruct / Decoding: ", err)
 	}
 	return website, nil
+}
+
+func StructToJsonFile(fname string, data WebsiteList) error {
+	file, err := os.Create(fname)
+	if err != nil {
+		return fmt.Errorf("Error in StructToJsonFile, file create error", err)
+	}
+	defer file.Close()
+	if err := json.NewEncoder(file).Encode(&data); err != nil {
+		return fmt.Errorf("Error in StructToJsonFile, file write error", err)
+	}
+	return nil
 }
