@@ -11,31 +11,29 @@ import (
 	"flag"
 )
 
-func PingWebsite(ctx context.Context, website <- chan string, data chan <- iotools.Website, w *sync.WaitGroup) {
+func PingWebsite(ctx context.Context, url string, data chan <- iotools.Website, w *sync.WaitGroup) {
 	defer w.Done()
 	t0 := time.Now().UnixMilli()
-	for url := range website {
-		status := true
-		statusCodeOrError := "200 OK"
-		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-		if err != nil {
-			status = false
-			statusCodeOrError = err.Error()
-		}
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		t1 := time.Now().UnixMilli()
-		if err != nil || resp.StatusCode != 200 {
-			status = false
-			statusCodeOrError = err.Error()
-		} else {
-			defer resp.Body.Close()
-		}
-		ping := int(t1-t0)
-		result := iotools.Website{URL: url, Ping: ping, StatusOK: status,}
-		fmt.Println("Done", url, statusCodeOrError, ping)
-		data <- result
+	status := true
+	statusCodeOrError := "200 OK"
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		status = false
+		statusCodeOrError = err.Error()
 	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	t1 := time.Now().UnixMilli()
+	if err != nil || resp.StatusCode != 200 {
+		status = false
+		statusCodeOrError = err.Error()
+	} else {
+		defer resp.Body.Close()
+	}
+	ping := int(t1-t0)
+	result := iotools.Website{URL: url, Ping: ping, StatusOK: status,}
+	fmt.Println("Done", url, statusCodeOrError, ping)
+	data <- result
 }
 
 type CLIArgs struct {
@@ -65,19 +63,16 @@ func main() {
 	// WaitGroup
 	var wg sync.WaitGroup
 	// Channels
-	w := make(chan string, len(data.Website))
 	d := make(chan iotools.Website, len(data.Website))
 	// Data from channels aggregated
 	out := iotools.WebsiteList{}
 	//
-	wg.Add(1)
 	t0 := time.Now().UnixMilli()
-	go PingWebsite(ctx, w, d, &wg)
 	for i := 0; i < len(data.Website); i++ {
-		w <- data.Website[i].URL
+		wg.Add(1)
+		go PingWebsite(ctx, data.Website[i].URL, d, &wg)
 	}
 	//
-	close(w)
 	wg.Wait()
 	close(d)
 	for i := range d {
