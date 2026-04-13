@@ -1,4 +1,4 @@
-package internal
+package iotools
 
 import (
 	"fmt"
@@ -17,13 +17,13 @@ type WebsiteList struct {
 }
 
 func JsonFileToStr(fname string) (WebsiteList, error) {
-	website := WebsiteList{Website: make([]Website)}
-	file, err := os.Open(fnname)
+	website := WebsiteList{Website: make([]Website, 10, 512)}
+	file, err := os.Open(fname)
 	if err != nil {
-		return nil, fmr.Errorf("Error in JsonFileToStr / Open data file: ", err)
+		return website, fmt.Errorf("Error in JsonFileToStr / Open data file: ", err)
 	}
 	if err := json.NewDecoder(file).Decode(&website); err != nil {
-		return nil, fmr.Errorf("Error in JsonFileToStr / Decoding: ", err)
+		return website, fmt.Errorf("Error in JsonFileToStr / Decoding: ", err)
 	}
 	return website, nil
 }
