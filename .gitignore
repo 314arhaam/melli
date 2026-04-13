@@ -4,3 +4,4 @@ data/*
 test
 Dockerfile_
 cherknevis.go
+logs/*
