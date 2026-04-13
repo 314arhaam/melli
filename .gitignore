@@ -5,3 +5,4 @@ test
 Dockerfile_
 cherknevis.go
 logs/*
+cron.sh
