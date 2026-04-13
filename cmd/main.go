@@ -35,6 +35,13 @@ func main() {
 	wg.Add(1)
 	dt := time.Now().UnixMilli()
 	go PingWebsite(w, d, &wg)
+	/*
+	go func(d <- chan iotools.Website){
+		for data := range d {
+			fmt.Println(data)
+		}
+	}(d)
+	*/
 	for i := 0; i < len(data.Website); i++ {
 		w <- data.Website[i].URL
 	}
