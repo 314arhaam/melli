@@ -1,6 +1,6 @@
 .PHONY: build exec
 
-build-api:
+build:
 	@go build -o bin/melli cmd/main.go
 
 exec:
