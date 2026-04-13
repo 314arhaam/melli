@@ -7,13 +7,16 @@ import (
 )
 
 type Website struct {
-	Name	string	`json:"name"`
-	URL		string	`json:"url"`
-	IsDom	bool	`json:"domestic"`
+	Name		string	`json:"name"`
+	URL			string	`json:"url"`
+	IsDom		bool	`json:"domestic"`
+	StatusOK	bool	`json:"status_ok"`
+	Ping 		int		`json:"ping"`
 }
 
 type WebsiteList struct {
 	Website	[]Website	`json:"website"`
+	Elapsed	int			`json:"elapsed_time"`
 }
 
 func JsonFileToStr(fname string) (WebsiteList, error) {
@@ -22,6 +25,7 @@ func JsonFileToStr(fname string) (WebsiteList, error) {
 	if err != nil {
 		return website, fmt.Errorf("Error in JsonFileToStr / Open data file: ", err)
 	}
+	defer file.Close()
 	if err := json.NewDecoder(file).Decode(&website); err != nil {
 		return website, fmt.Errorf("Error in JsonFileToStr / Decoding: ", err)
 	}
