@@ -11,7 +11,7 @@ type Website struct {
 	URL			string	`json:"url"`
 	IsDom		bool	`json:"domestic"`
 	StatusOK	bool	`json:"status_ok"`
-	Ping 		int		`json:"ping"`
+	Ping 		int64	`json:"ping"`
 }
 
 type WebsiteList struct {
