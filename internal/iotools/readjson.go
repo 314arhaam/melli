@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type Website struct {
@@ -14,11 +15,22 @@ type Website struct {
 }
 
 type WebsiteList struct {
+	startTime	time.Time
 	DateTime	string		`json:"datetime"`
 	TimeStamp	int64		`json:"ts"`
 	Website		[]Website	`json:"website"`
 	Elapsed		int64		`json:"elapsed_time"`
 	Timeout		int64		`json:"timeout"`
+}
+
+func (wl *WebsiteList) Start() {
+	wl.startTime = time.Now()
+	wl.DateTime = wl.startTime.Format(time.DateTime)
+	wl.TimeStamp = wl.startTime.UnixMilli()
+}
+
+func (wl *WebsiteList) Tick() {
+	wl.Elapsed = time.Since(wl.startTime).Milliseconds()
 }
 
 func JsonFileToStruct(fname string) (WebsiteList, error) {
