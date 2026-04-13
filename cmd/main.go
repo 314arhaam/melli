@@ -11,7 +11,7 @@ import (
 	"flag"
 )
 
-func PingWebsite(ctx context.Context, url string, data chan <- iotools.Website, w *sync.WaitGroup) {
+func PingWebsite(ctx context.Context, name string, url string, data chan <- iotools.Website, w *sync.WaitGroup) {
 	defer w.Done()
 	startTime := time.Now()
 	status := true
@@ -30,7 +30,12 @@ func PingWebsite(ctx context.Context, url string, data chan <- iotools.Website, 
 	} else {
 		defer resp.Body.Close()
 	}
-	result := iotools.Website{URL: url, Ping: ping, StatusOK: status,}
+	result := iotools.Website{
+		Name: name,
+		URL: url, 
+		Ping: ping, 
+		StatusOK: status,
+	}
 	fmt.Println("Done", url, statusCodeOrError, ping)
 	data <- result
 }
@@ -69,7 +74,7 @@ func main() {
 	startTime := time.Now()
 	for _, wb := range data.Website {
 		wg.Add(1)
-		go PingWebsite(ctx, wb.URL, d, &wg)
+		go PingWebsite(ctx, wb.Name, wb.URL, d, &wg)
 	}
 	//
 	wg.Wait()
@@ -78,6 +83,8 @@ func main() {
 		out.Website = append(out.Website, i)
 	}
 	out.Elapsed = time.Since(startTime).Milliseconds()
+	out.DateTime = startTime.Format(time.DateTime)
+	out.TimeStamp = startTime.UnixMilli()
 	//fmt.Println(out)
 	err := iotools.StructToJsonFile(*cli.outputFile, out)
 	if err != nil {
