@@ -8,16 +8,25 @@ import (
 	"sync"
 	"encoding/json"
 	"os"
+	"context"
 )
 
-func PingWebsite(website <- chan string, data chan <- iotools.Website, w *sync.WaitGroup) {
+func PingWebsite(ctx context.Context, website <- chan string, data chan <- iotools.Website, w *sync.WaitGroup) {
 	defer w.Done()
 	t0 := time.Now().UnixMilli()
 	for wb := range website {
-		resp, err := http.Get(wb)
+		status := true
+		req, err := http.NewRequestWithContext(ctx, "GET", wb, nil)
+		if err != nil {
+			status = false
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			status = false
+		}
 		t1 := time.Now().UnixMilli()
 		ping := int(t1-t0)
-		status := true
 		if err != nil || resp.StatusCode != 200 {
 			status = false
 		}
@@ -27,6 +36,7 @@ func PingWebsite(website <- chan string, data chan <- iotools.Website, w *sync.W
 
 
 func main() {
+	ctx, _ := context.WithTimeout(context.Background(), 2 * time.Second)
 	data, _ := iotools.JsonFileToStr("data/d.json")
 	fmt.Println(data.Website)
 	w := make(chan string, len(data.Website))
@@ -34,7 +44,7 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	dt := time.Now().UnixMilli()
-	go PingWebsite(w, d, &wg)
+	go PingWebsite(ctx, w, d, &wg)
 	/*
 	go func(d <- chan iotools.Website){
 		for data := range d {
