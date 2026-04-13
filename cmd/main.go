@@ -68,9 +68,9 @@ func main() {
 	out := iotools.WebsiteList{}
 	//
 	t0 := time.Now().UnixMilli()
-	for i := 0; i < len(data.Website); i++ {
+	for _, wb := range data.Website {
 		wg.Add(1)
-		go PingWebsite(ctx, data.Website[i].URL, d, &wg)
+		go PingWebsite(ctx, wb.URL, d, &wg)
 	}
 	//
 	wg.Wait()
@@ -80,7 +80,7 @@ func main() {
 	}
 	t1 := time.Now().UnixMilli()
 	out.Elapsed = int(t1-t0)
-	fmt.Println(out)
+	//fmt.Println(out)
 	err := iotools.StructToJsonFile(*cli.outputFile, out)
 	if err != nil {
 		fmt.Println(err)
