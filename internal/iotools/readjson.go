@@ -15,8 +15,10 @@ type Website struct {
 }
 
 type WebsiteList struct {
-	Website	[]Website	`json:"website"`
-	Elapsed	int64		`json:"elapsed_time"`
+	Website		[]Website	`json:"website"`
+	Elapsed		int64		`json:"elapsed_time"`
+	DateTime	string		`json:"datetime"`
+	TimeStamp	int64		`json:"ts"`
 }
 
 func JsonFileToStruct(fname string) (WebsiteList, error) {
