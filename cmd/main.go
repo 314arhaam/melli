@@ -76,6 +76,7 @@ func main() {
 	for i := 0; i < len(data.Website); i++ {
 		w <- data.Website[i].URL
 	}
+	//
 	close(w)
 	wg.Wait()
 	close(d)
