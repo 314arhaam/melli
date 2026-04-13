@@ -6,72 +6,87 @@ import (
 	"net/http"
 	"time"
 	"sync"
-	"encoding/json"
-	"os"
+	// "encoding/json"
 	"context"
+	"flag"
 )
 
 func PingWebsite(ctx context.Context, website <- chan string, data chan <- iotools.Website, w *sync.WaitGroup) {
 	defer w.Done()
 	t0 := time.Now().UnixMilli()
-	for wb := range website {
+	for url := range website {
 		status := true
-		req, err := http.NewRequestWithContext(ctx, "GET", wb, nil)
+		statusCodeOrError := "200 OK"
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
 			status = false
+			statusCodeOrError = err.Error()
 		}
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		if err != nil {
-			status = false
-		}
 		t1 := time.Now().UnixMilli()
-		ping := int(t1-t0)
 		if err != nil || resp.StatusCode != 200 {
 			status = false
+			statusCodeOrError = err.Error()
+		} else {
+			defer resp.Body.Close()
 		}
-		data <- iotools.Website{URL: wb, Ping: ping, StatusOK: status,}
+		ping := int(t1-t0)
+		result := iotools.Website{URL: url, Ping: ping, StatusOK: status,}
+		fmt.Println("Done", url, statusCodeOrError, ping)
+		data <- result
 	}
 }
 
+type CLIArgs struct {
+	timeOut		*int64
+	inputFile	*string
+	outputFile	*string
+}
+
+func (cli *CLIArgs) Init() {
+	cli.timeOut = flag.Int64("t", 60, "Timeout in seconds, default 60")
+	cli.inputFile = flag.String("f", "", "Input filename")
+	cli.outputFile = flag.String("o", "data/output.json", "Output filename")
+	flag.Parse()
+	if *cli.inputFile == "" {
+		panic("No input file added")
+	}
+}
 
 func main() {
-	ctx, _ := context.WithTimeout(context.Background(), 2 * time.Second)
-	data, _ := iotools.JsonFileToStr("data/d.json")
-	fmt.Println(data.Website)
+	// Parse CLI Args
+	cli := CLIArgs{}
+	cli.Init()
+	// Input data
+	data, _ := iotools.JsonFileToStruct(*cli.inputFile)
+	// Context
+	ctx, _ := context.WithTimeout(context.Background(), time.Duration(*cli.timeOut) * time.Second)
+	// WaitGroup
+	var wg sync.WaitGroup
+	// Channels
 	w := make(chan string, len(data.Website))
 	d := make(chan iotools.Website, len(data.Website))
-	var wg sync.WaitGroup
+	// Data from channels aggregated
+	out := iotools.WebsiteList{}
+	//
 	wg.Add(1)
-	dt := time.Now().UnixMilli()
+	t0 := time.Now().UnixMilli()
 	go PingWebsite(ctx, w, d, &wg)
-	/*
-	go func(d <- chan iotools.Website){
-		for data := range d {
-			fmt.Println(data)
-		}
-	}(d)
-	*/
 	for i := 0; i < len(data.Website); i++ {
 		w <- data.Website[i].URL
 	}
 	close(w)
 	wg.Wait()
 	close(d)
-	out := iotools.WebsiteList{}
 	for i := range d {
-		fmt.Println("Done", i)
 		out.Website = append(out.Website, i)
 	}
-	dt = time.Now().UnixMilli() - dt
-	out.Elapsed = int(dt)
+	t1 := time.Now().UnixMilli()
+	out.Elapsed = int(t1-t0)
 	fmt.Println(out)
-	file, err := os.Create("data/results.json")
+	err := iotools.StructToJsonFile(*cli.outputFile, out)
 	if err != nil {
-		fmt.Errorf("Error in main, file creation error", err)
-	}
-	defer file.Close()
-	if err := json.NewEncoder(file).Encode(&out); err != nil {
 		fmt.Println(err)
 	}
 }
