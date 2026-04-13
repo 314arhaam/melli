@@ -1,7 +1,6 @@
 bin/
 .env
 data/*
-rfs
 test
 Dockerfile_
-m.go
+cherknevis.go
