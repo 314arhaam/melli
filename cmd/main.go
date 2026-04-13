@@ -67,7 +67,7 @@ func main() {
 	// Data from channels aggregated
 	out := iotools.WebsiteList{}
 	//
-	t0 := time.Now().UnixMilli()
+	startTime := time.Now()
 	for _, wb := range data.Website {
 		wg.Add(1)
 		go PingWebsite(ctx, wb.URL, d, &wg)
@@ -78,8 +78,7 @@ func main() {
 	for i := range d {
 		out.Website = append(out.Website, i)
 	}
-	t1 := time.Now().UnixMilli()
-	out.Elapsed = int(t1-t0)
+	out.Elapsed = time.Since(startTime).Milliseconds()
 	//fmt.Println(out)
 	err := iotools.StructToJsonFile(*cli.outputFile, out)
 	if err != nil {
