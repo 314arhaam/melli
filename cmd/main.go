@@ -13,7 +13,7 @@ import (
 
 func PingWebsite(ctx context.Context, url string, data chan <- iotools.Website, w *sync.WaitGroup) {
 	defer w.Done()
-	t0 := time.Now().UnixMilli()
+	startTime := time.Now()
 	status := true
 	statusCodeOrError := "200 OK"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -23,14 +23,13 @@ func PingWebsite(ctx context.Context, url string, data chan <- iotools.Website, 
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	t1 := time.Now().UnixMilli()
+	ping := time.Since(startTime).Milliseconds()
 	if err != nil || resp.StatusCode != 200 {
 		status = false
 		statusCodeOrError = err.Error()
 	} else {
 		defer resp.Body.Close()
 	}
-	ping := int(t1-t0)
 	result := iotools.Website{URL: url, Ping: ping, StatusOK: status,}
 	fmt.Println("Done", url, statusCodeOrError, ping)
 	data <- result
