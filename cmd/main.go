@@ -51,8 +51,8 @@ type CLIArgs struct {
 
 func (cli *CLIArgs) Init() {
 	cli.timeOut = flag.Int64("t", 60, "Timeout in seconds, default 60")
-	cli.inputFile = flag.String("f", "", "Input filename")
-	cli.outputFile = flag.String("o", "", "Output filename")
+	cli.inputFile = flag.String("f", "", "**REQUIRED** Input filename")
+	cli.outputFile = flag.String("o", "", "Output filename. For auto output pass -. Default: no output file, only show in stdout.")
 	flag.Parse()
 	if *cli.inputFile == "" {
 		panic("No input file added")
