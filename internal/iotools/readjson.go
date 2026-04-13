@@ -9,7 +9,6 @@ import (
 type Website struct {
 	Name		string	`json:"name"`
 	URL			string	`json:"url"`
-	IsDom		bool	`json:"domestic"`
 	StatusOK	bool	`json:"status_ok"`
 	Ping 		int64	`json:"ping"`
 }
