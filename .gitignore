@@ -1,4 +1,4 @@
-bin/
+bin/*
 .env
 data/*
 test
@@ -8,3 +8,4 @@ logs/*
 cron.sh
 vendor/*
 .venv
+plots/*
