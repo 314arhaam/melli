@@ -6,3 +6,5 @@ Dockerfile_
 cherknevis.go
 logs/*
 cron.sh
+vendor/*
+.venv
