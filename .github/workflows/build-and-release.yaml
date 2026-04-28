@@ -22,8 +22,7 @@ jobs:
         run: go mod tidy
 
       - name: Build binaries
-        run: |
-          GOOS=linux GOARCH=amd64 go build -o ../melli-linux-amd64 ./cmd/main.go
+        run: GOOS=linux GOARCH=amd64 go build -o ../melli-linux-amd64 ./cmd/main.go
 
       - name: Create GitHub Release
         id: create_release
